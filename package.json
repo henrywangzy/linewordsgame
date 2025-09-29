@@ -1,0 +1,12 @@
+{
+  "name": "linewords-game",
+  "version": "1.0.0",
+  "description": "连线单词游戏",
+  "main": "index.html",
+  "scripts": {
+    "test": "node test-20250929_212407/test_script.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.40.0"
+  }
+}

@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>连线单词 - UI设计展示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .demo-container {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 40px;
+            padding: 10px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 30px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 游戏界面样式 */
+        .game-screen {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+
+        /* 顶部信息栏 */
+        .game-header {
+            background: white;
+            padding: 12px 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 56px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .back-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: #f0f0f0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .level-info {
+            font-size: 14px;
+            font-weight: bold;
+            color: #42A5F5;
+        }
+
+        .header-center {
+            display: flex;
+            gap: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 8px;
+        }
+
+        .header-right span {
+            cursor: pointer;
+            font-size: 20px;
+            padding: 4px;
+        }
+
+        /* 游戏主体区域 */
+        .game-main {
+            flex: 1;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 状态提示行 - 精简版 */
+        .status-line {
+            background: rgba(255,255,255,0.9);
+            border-radius: 20px;
+            padding: 8px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .word-info {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .phase-badge {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* 连线网格区域 */
+        .grid-container {
+            flex: 1;
+            position: relative;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .line-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 50px);
+            grid-template-rows: repeat(10, 50px);
+            gap: 5px;
+            position: relative;
+        }
+
+        .grid-cell {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* 格子状态 */
+        .grid-cell.highlight {
+            background: linear-gradient(135deg, #FFE082, #FFD54F);
+            border-color: #FFC107;
+            animation: pulse 1s infinite;
+        }
+
+        .grid-cell.showing {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: #5a67d8;
+            transform: scale(1.1);
+        }
+
+        .grid-cell.correct {
+            background: linear-gradient(135deg, #66BB6A, #4CAF50);
+            color: white;
+            border-color: #43A047;
+        }
+
+        .grid-cell.error {
+            background: linear-gradient(135deg, #EF5350, #f44336);
+            color: white;
+            border-color: #E53935;
+            animation: shake 0.3s;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* SVG连线层 */
+        .svg-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .connection-line {
+            stroke: url(#lineGradient);
+            stroke-width: 3;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            opacity: 0.8;
+        }
+
+        /* 操作提示区 */
+        .hint-area {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            padding: 8px;
+            background: rgba(255,255,255,0.8);
+            border-radius: 15px;
+            margin-bottom: 10px;
+        }
+
+        /* 底部统计栏 */
+        .game-stats {
+            background: white;
+            padding: 12px;
+            display: flex;
+            justify-content: space-around;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* 单词卡片弹窗 */
+        .word-card-modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            width: 90%;
+            max-width: 320px;
+            z-index: 1000;
+            animation: cardPopup 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes cardPopup {
+            from {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .word-card-header {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .word-english {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .word-chinese {
+            font-size: 24px;
+            color: #333;
+            margin: 10px 0;
+        }
+
+        .word-phonetic {
+            font-size: 16px;
+            color: #999;
+            margin-bottom: 20px;
+        }
+
+        .word-example {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: left;
+        }
+
+        .example-en {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .example-cn {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        /* 阶段标题 */
+        .phase-title {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* 覆盖层 */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <!-- 界面1：观察阶段 -->
+        <div class="phone-frame">
+            <div class="phone-screen">
+                <div class="game-screen">
+                    <!-- 顶部信息栏 -->
+                    <div class="game-header">
+                        <div class="header-left">
+                            <button class="back-btn">⬅️</button>
+                            <div class="level-info">1年级 - 中等</div>
+                        </div>
+                        <div class="header-center">
+                            <div>⏱ <span style="font-weight: bold; color: #333;">00:05</span></div>
+                            <div>🔄 <span style="font-weight: bold; color: #333;">0</span></div>
+                        </div>
+                        <div class="header-right">
+                            <span>🎵</span>
+                            <span>⏸️</span>
+                        </div>
+                    </div>
+
+                    <!-- 游戏主体 -->
+                    <div class="game-main">
+                        <!-- 精简的状态提示行 -->
+                        <div class="status-line">
+                            <span class="word-info">Apple · 苹果</span>
+                            <span class="phase-badge">👀 观察阶段</span>
+                        </div>
+
+                        <!-- 网格区域 -->
+                        <div class="grid-container">
+                            <div class="line-grid">
+                                <!-- 第1行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell showing">A</div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <!-- 第2行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <!-- 第3行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <!-- 第4行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <!-- 第5行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <!-- 第6行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <!-- 第7行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <!-- 第8行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <!-- 第9行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <!-- 第10行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                            </div>
+                        </div>
+
+                        <!-- 提示区 -->
+                        <div class="hint-area">
+                            请仔细观察字母出现的顺序...
+                        </div>
+                    </div>
+
+                    <!-- 底部统计 -->
+                    <div class="game-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">得分</div>
+                            <div class="stat-value">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">连击</div>
+                            <div class="stat-value">×0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">进度</div>
+                            <div class="stat-value">1/10</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="phase-title">阶段1：观察记忆</div>
+            </div>
+        </div>
+
+        <!-- 界面2：连线阶段 -->
+        <div class="phone-frame">
+            <div class="phone-screen">
+                <div class="game-screen">
+                    <!-- 顶部信息栏 -->
+                    <div class="game-header">
+                        <div class="header-left">
+                            <button class="back-btn">⬅️</button>
+                            <div class="level-info">1年级 - 中等</div>
+                        </div>
+                        <div class="header-center">
+                            <div>⏱ <span style="font-weight: bold; color: #333;">00:12</span></div>
+                            <div>🔄 <span style="font-weight: bold; color: #333;">3</span></div>
+                        </div>
+                        <div class="header-right">
+                            <span>🎵</span>
+                            <span>⏸️</span>
+                        </div>
+                    </div>
+
+                    <!-- 游戏主体 -->
+                    <div class="game-main">
+                        <!-- 精简的状态提示行 -->
+                        <div class="status-line">
+                            <span class="word-info">Apple · 苹果</span>
+                            <span class="phase-badge" style="background: linear-gradient(135deg, #66BB6A, #4CAF50);">✏️ 连线阶段</span>
+                        </div>
+
+                        <!-- 网格区域 -->
+                        <div class="grid-container">
+                            <!-- SVG连线层 -->
+                            <svg class="svg-layer">
+                                <defs>
+                                    <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#4CAF50;stop-opacity:1" />
+                                    </linearGradient>
+                                </defs>
+                                <path class="connection-line" d="M 55,40 L 55,95 L 110,95" />
+                            </svg>
+
+                            <div class="line-grid">
+                                <!-- 第1行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell correct">A</div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <!-- 第2行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell correct">p</div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <!-- 第3行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell correct">p</div>
+                                <div class="grid-cell highlight"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <!-- 第4行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <!-- 第5行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <!-- 第6行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <!-- 第7行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <!-- 第8行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <!-- 第9行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <!-- 第10行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                            </div>
+                        </div>
+
+                        <!-- 提示区 -->
+                        <div class="hint-area">
+                            从起点开始，依次连接字母
+                        </div>
+                    </div>
+
+                    <!-- 底部统计 -->
+                    <div class="game-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">得分</div>
+                            <div class="stat-value">100</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">连击</div>
+                            <div class="stat-value" style="color: #4CAF50;">×3</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">进度</div>
+                            <div class="stat-value">1/10</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="phase-title">阶段2：连线挑战</div>
+            </div>
+        </div>
+
+        <!-- 界面3：成功反馈 -->
+        <div class="phone-frame">
+            <div class="phone-screen">
+                <div class="game-screen">
+                    <!-- 顶部信息栏 -->
+                    <div class="game-header">
+                        <div class="header-left">
+                            <button class="back-btn">⬅️</button>
+                            <div class="level-info">1年级 - 中等</div>
+                        </div>
+                        <div class="header-center">
+                            <div>⏱ <span style="font-weight: bold; color: #333;">00:15</span></div>
+                            <div>🔄 <span style="font-weight: bold; color: #333;">5</span></div>
+                        </div>
+                        <div class="header-right">
+                            <span>🎵</span>
+                            <span>⏸️</span>
+                        </div>
+                    </div>
+
+                    <!-- 游戏主体 -->
+                    <div class="game-main">
+                        <!-- 精简的状态提示行 -->
+                        <div class="status-line">
+                            <span class="word-info">Apple · 苹果</span>
+                            <span class="phase-badge" style="background: linear-gradient(135deg, #FFB74D, #FF9800);">🎉 完成！</span>
+                        </div>
+
+                        <!-- 网格区域 -->
+                        <div class="grid-container">
+                            <!-- SVG连线层 -->
+                            <svg class="svg-layer">
+                                <path class="connection-line" d="M 55,40 L 55,95 L 110,95 L 165,95 L 165,150 L 165,205"
+                                      style="filter: drop-shadow(0 0 10px #4CAF50);" />
+                            </svg>
+
+                            <div class="line-grid">
+                                <!-- 第1行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell correct">A</div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <!-- 第2行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell correct">p</div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <!-- 第3行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell correct">p</div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <!-- 第4行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell correct">l</div>
+                                <div class="grid-cell correct">e</div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <!-- 第5行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <!-- 第6行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <!-- 第7行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <!-- 第8行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <!-- 第9行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <!-- 第10行 -->
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                                <div class="grid-cell"></div>
+                            </div>
+                        </div>
+
+                        <!-- 提示区 -->
+                        <div class="hint-area" style="color: #4CAF50; font-weight: bold;">
+                            太棒了！继续下一个单词
+                        </div>
+                    </div>
+
+                    <!-- 底部统计 -->
+                    <div class="game-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">得分</div>
+                            <div class="stat-value" style="color: #4CAF50;">250</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">连击</div>
+                            <div class="stat-value" style="color: #FF9800;">×5</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">进度</div>
+                            <div class="stat-value">2/10</div>
+                        </div>
+                    </div>
+
+                    <!-- 单词卡片弹窗 -->
+                    <div class="overlay"></div>
+                    <div class="word-card-modal">
+                        <div class="word-card-header">
+                            <span>🎊</span>
+                            <span class="word-english">Apple</span>
+                            <span>🎊</span>
+                        </div>
+                        <div class="word-chinese">苹果</div>
+                        <div class="word-phonetic">/ˈæpl/</div>
+                        <div class="word-example">
+                            <div class="example-en">An apple a day keeps the doctor away.</div>
+                            <div class="example-cn">每天一个苹果，医生远离我。</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="phase-title">阶段3：学习反馈</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
