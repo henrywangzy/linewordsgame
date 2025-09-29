@@ -217,11 +217,12 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            padding: 25px 20px 10px 20px; /* 增加顶部内边距15px */
+            padding: 60px 20px 10px 20px; /* 大幅增加顶部内边距，避免太靠上 */
             animation: fadeIn 0.5s ease-out;
             position: relative;
             z-index: 1;
-            overflow-y: auto; /* 添加滚动 */
+            overflow-y: auto;
+            justify-content: flex-start; /* 确保内容从顶部开始 */
         }
         
         .logo-area {
@@ -429,18 +430,25 @@
             0%, 100% { transform: translateY(0) rotateY(0deg); }
             50% { transform: translateY(-10px) rotateY(180deg); }
         }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
         
         .game-title {
-            font-size: 36px; /* 调整字体大小以配合卡牌 */
+            font-size: 32px; /* 适当减小字体 */
             font-weight: bold;
             background: linear-gradient(45deg, #FFD700, #FFA500, #FF6347);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin: 10px 0 15px 0; /* 调整上下间距 */
+            margin: 15px 0 20px 0; /* 增加间距 */
             text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
             animation: shimmer 3s ease-in-out infinite;
             position: relative;
+            letter-spacing: 2px; /* 增加字母间距 */
         }
         
         @keyframes shimmer {
@@ -2689,28 +2697,76 @@
             
             <div class="home-content">
                 <div class="logo-area">
-                    <!-- 单词连线图标 -->
-                    <div class="word-line-logo" style="width: 100%; max-width: 320px; height: 120px; background: linear-gradient(135deg, #8B7FFF, #6B5FE0); border-radius: 15px; padding: 15px; box-shadow: 0 5px 20px rgba(107, 95, 224, 0.3); margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
-                        <svg viewBox="0 0 300 80" style="width: 100%; height: 100%;">
-                            <!-- 网格背景 -->
-                            <rect x="10" y="10" width="40" height="40" fill="rgba(255,255,255,0.2)" rx="5"/>
-                            <rect x="55" y="10" width="40" height="40" fill="rgba(255,255,255,0.2)" rx="5"/>
-                            <rect x="100" y="10" width="40" height="40" fill="rgba(255,255,255,0.2)" rx="5"/>
-                            <rect x="145" y="10" width="40" height="40" fill="rgba(255,255,255,0.2)" rx="5"/>
-                            <rect x="190" y="10" width="40" height="40" fill="rgba(255,255,255,0.2)" rx="5"/>
+                    <!-- 美化的单词连线图标 -->
+                    <div class="word-line-logo" style="width: 100%; max-width: 340px; height: 140px; background: linear-gradient(135deg, #667eea 0%, #9f7aea 50%, #ed64a6 100%); border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4); margin: 0 auto 25px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+                        <!-- 装饰性背景动画 -->
+                        <div style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; opacity: 0.3;">
+                            <div style="position: absolute; width: 60px; height: 60px; background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%); border-radius: 50%; top: -20px; left: -20px; animation: logoFloat 6s ease-in-out infinite;"></div>
+                            <div style="position: absolute; width: 80px; height: 80px; background: radial-gradient(circle, rgba(255,255,255,0.6) 0%, transparent 70%); border-radius: 50%; bottom: -30px; right: -30px; animation: logoFloat 8s ease-in-out infinite reverse;"></div>
+                            <div style="position: absolute; width: 40px; height: 40px; background: radial-gradient(circle, rgba(255,215,0,0.5) 0%, transparent 70%); border-radius: 50%; top: 20px; right: 40px; animation: logoFloat 5s ease-in-out infinite 1s;"></div>
+                        </div>
 
-                            <!-- 连线 -->
-                            <path d="M 30 30 L 75 30 L 120 30 L 165 30" stroke="#FFD700" stroke-width="3" fill="none" stroke-linecap="round"/>
+                        <svg viewBox="0 0 320 100" style="width: 100%; height: 100%; position: relative; z-index: 1;">
+                            <!-- 3D网格效果 -->
+                            <defs>
+                                <linearGradient id="gridGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.3" />
+                                    <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0.1" />
+                                </linearGradient>
+                                <filter id="glow">
+                                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                                    <feMerge>
+                                        <feMergeNode in="coloredBlur"/>
+                                        <feMergeNode in="SourceGraphic"/>
+                                    </feMerge>
+                                </filter>
+                            </defs>
 
-                            <!-- 字母 -->
-                            <text x="30" y="36" text-anchor="middle" fill="white" font-size="20" font-weight="bold">H</text>
-                            <text x="75" y="36" text-anchor="middle" fill="white" font-size="20" font-weight="bold">E</text>
-                            <text x="120" y="36" text-anchor="middle" fill="white" font-size="20" font-weight="bold">L</text>
-                            <text x="165" y="36" text-anchor="middle" fill="white" font-size="20" font-weight="bold">L</text>
-                            <text x="210" y="36" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-size="20" font-weight="bold">O</text>
+                            <!-- 网格方块 -->
+                            <g transform="translate(0, 5)">
+                                <rect x="20" y="20" width="42" height="42" fill="url(#gridGradient)" rx="8" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+                                <rect x="68" y="20" width="42" height="42" fill="url(#gridGradient)" rx="8" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+                                <rect x="116" y="20" width="42" height="42" fill="url(#gridGradient)" rx="8" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+                                <rect x="164" y="20" width="42" height="42" fill="url(#gridGradient)" rx="8" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+                                <rect x="212" y="20" width="42" height="42" fill="url(#gridGradient)" rx="8" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+                                <rect x="260" y="20" width="42" height="42" fill="url(#gridGradient)" rx="8" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+                            </g>
 
-                            <!-- 中文 -->
-                            <text x="250" y="36" text-anchor="middle" fill="#FFD700" font-size="16" font-weight="bold">你好</text>
+                            <!-- 动态连线效果 -->
+                            <path d="M41 41 C75 35, 85 47, 89 41 C115 35, 125 47, 137 41 C165 35, 175 47, 185 41 C215 35, 225 47, 233 41 C265 35, 275 47, 281 41"
+                                  stroke="#FFD700"
+                                  stroke-width="5"
+                                  fill="none"
+                                  stroke-linecap="round"
+                                  filter="url(#glow)"
+                                  opacity="0.9">
+                                <animate attributeName="stroke-dasharray"
+                                         values="0 400;400 0;400 0"
+                                         dur="4s"
+                                         repeatCount="indefinite"/>
+                                <animate attributeName="stroke-dashoffset"
+                                         values="0;-400;-800"
+                                         dur="4s"
+                                         repeatCount="indefinite"/>
+                            </path>
+
+                            <!-- 3D字母效果 -->
+                            <g filter="url(#glow)">
+                                <text x="41" y="47" fill="white" font-size="24" font-weight="bold" text-anchor="middle" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">H</text>
+                                <text x="89" y="47" fill="white" font-size="24" font-weight="bold" text-anchor="middle" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">E</text>
+                                <text x="137" y="47" fill="white" font-size="24" font-weight="bold" text-anchor="middle" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">L</text>
+                                <text x="185" y="47" fill="white" font-size="24" font-weight="bold" text-anchor="middle" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">L</text>
+                                <text x="233" y="47" fill="white" font-size="24" font-weight="bold" text-anchor="middle" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">O</text>
+                                <text x="281" y="47" fill="#FFD700" font-size="28" font-weight="bold" text-anchor="middle" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">★</text>
+                            </g>
+
+                            <!-- 点缀动画圆点 -->
+                            <circle cx="41" cy="41" r="3" fill="#FFD700" opacity="0">
+                                <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" begin="0s"/>
+                            </circle>
+                            <circle cx="281" cy="41" r="3" fill="#FFD700" opacity="0">
+                                <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" begin="1s"/>
+                            </circle>
                         </svg>
                     </div>
                     <h1 class="game-title">记忆单词连线游戏</h1>
@@ -2779,9 +2835,6 @@
                             </div>
                             <div style="text-align: center; font-size: 12px; color: #666; margin-top: 5px;">
                                 <span id="volumeValue">50%</span>
-                            </div>
-                            <div style="text-align: center; margin-top: 8px;">
-                                <button onclick="forcePlayMusic()" style="padding: 4px 12px; background: #42A5F5; color: white; border: none; border-radius: 5px; font-size: 12px; cursor: pointer;">🎵 播放音乐</button>
                             </div>
                         </div>
                     </div>
@@ -3177,39 +3230,6 @@
             console.log('✅ 背景音乐已准备就绪，等待用户点击按钮触发播放');
         }
 
-        // 强制播放音乐函数（用于手动点击）
-        function forcePlayMusic() {
-            console.log('手动点击播放音乐');
-            if (backgroundMusic) {
-                // 设置音量
-                const volumeSlider = document.getElementById('volumeSlider');
-                if (volumeSlider && volumeSlider.value > 0) {
-                    backgroundMusic.volume = volumeSlider.value / 100;
-                    backgroundMusicEnabled = true;
-                } else {
-                    backgroundMusic.volume = 0.3;
-                    backgroundMusicEnabled = true;
-                }
-
-                // 尝试播放
-                backgroundMusic.play().then(() => {
-                    console.log('✅ 手动播放成功');
-                    // 关闭音量控制面板
-                    const volumeControl = document.getElementById('volumeControl');
-                    if (volumeControl) {
-                        setTimeout(() => {
-                            volumeControl.style.display = 'none';
-                        }, 500);
-                    }
-                }).catch(e => {
-                    console.error('❌ 手动播放失败:', e);
-                    alert('音乐播放失败，请检查浏览器设置或音频文件');
-                });
-            } else {
-                console.error('音乐元素未找到');
-            }
-        }
-
         // 播放背景音乐的通用函数
         function playBackgroundMusic() {
             console.log('调用 playBackgroundMusic 函数');
@@ -3228,27 +3248,12 @@
                         backgroundMusic.volume = 0.3;
                     }
 
-                    // 尝试播放，添加用户交互后的重试机制
+                    // 尝试播放
                     backgroundMusic.play().then(() => {
                         console.log('✅ 背景音乐开始播放');
                     }).catch(e => {
                         console.error('❌ 背景音乐播放失败:', e.message);
-                        // 在移动设备上，可能需要用户交互才能播放
-                        if (e.name === 'NotAllowedError') {
-                            console.log('⚠️ 需要用户交互才能播放音频，将在下次点击时重试');
-                            // 添加一次性点击/触摸事件监听器
-                            const retryPlay = function() {
-                                if (backgroundMusic && backgroundMusic.paused && backgroundMusicEnabled) {
-                                    backgroundMusic.play().then(() => {
-                                        console.log('✅ 用户交互后音乐开始播放');
-                                    }).catch(err => {
-                                        console.error('❌ 重试后仍然失败:', err);
-                                    });
-                                }
-                            };
-                            document.addEventListener('click', retryPlay, { once: true });
-                            document.addEventListener('touchstart', retryPlay, { once: true });
-                        }
+                        console.error('错误类型:', e.name);
                     });
                 } else {
                     console.log('背景音乐已经在播放中');
@@ -5587,8 +5592,26 @@
             currentGrade = parseInt(document.getElementById('gradeSelect').value);
             const difficulty = document.getElementById('difficultySelect').value;
 
-            // 开始游戏时播放背景音乐（用户点击触发）
-            playBackgroundMusic();
+            // 开始游戏时直接播放背景音乐（用户点击触发）
+            if (backgroundMusic) {
+                const volumeSlider = document.getElementById('volumeSlider');
+                if (volumeSlider) {
+                    backgroundMusic.volume = volumeSlider.value / 100;
+                } else {
+                    backgroundMusic.volume = 0.3;
+                }
+
+                // 直接尝试播放，这是用户点击事件触发的，应该能成功
+                backgroundMusicEnabled = true;
+                backgroundMusic.play().then(() => {
+                    console.log('✅ 开始游戏，背景音乐播放成功');
+                }).catch(e => {
+                    console.error('❌ 背景音乐播放失败:', e);
+                    console.error('错误类型:', e.name);
+                    console.error('错误消息:', e.message);
+                    // 静默失败，不影响游戏进行
+                });
+            }
 
             showScreen('gameScreen');
 
