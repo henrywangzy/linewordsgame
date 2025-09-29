@@ -2780,6 +2780,9 @@
                             <div style="text-align: center; font-size: 12px; color: #666; margin-top: 5px;">
                                 <span id="volumeValue">50%</span>
                             </div>
+                            <div style="text-align: center; margin-top: 8px;">
+                                <button onclick="forcePlayMusic()" style="padding: 4px 12px; background: #42A5F5; color: white; border: none; border-radius: 5px; font-size: 12px; cursor: pointer;">🎵 播放音乐</button>
+                            </div>
                         </div>
                     </div>
                     <span id="replayBtn" onclick="replayObservation()" style="cursor: pointer; font-size: 20px; color: #667eea; padding: 4px;" title="再播放一次">🔁</span>
@@ -3109,8 +3112,10 @@
     </div>
     
     <!-- 背景音乐 -->
-    <audio id="backgroundMusic" loop preload="auto">
+    <audio id="backgroundMusic" loop preload="auto" playsinline>
         <source src="background.mp3" type="audio/mpeg">
+        <source src="background.ogg" type="audio/ogg">
+        <source src="background.wav" type="audio/wav">
         您的浏览器不支持音频元素。
     </audio>
 
@@ -3172,6 +3177,39 @@
             console.log('✅ 背景音乐已准备就绪，等待用户点击按钮触发播放');
         }
 
+        // 强制播放音乐函数（用于手动点击）
+        function forcePlayMusic() {
+            console.log('手动点击播放音乐');
+            if (backgroundMusic) {
+                // 设置音量
+                const volumeSlider = document.getElementById('volumeSlider');
+                if (volumeSlider && volumeSlider.value > 0) {
+                    backgroundMusic.volume = volumeSlider.value / 100;
+                    backgroundMusicEnabled = true;
+                } else {
+                    backgroundMusic.volume = 0.3;
+                    backgroundMusicEnabled = true;
+                }
+
+                // 尝试播放
+                backgroundMusic.play().then(() => {
+                    console.log('✅ 手动播放成功');
+                    // 关闭音量控制面板
+                    const volumeControl = document.getElementById('volumeControl');
+                    if (volumeControl) {
+                        setTimeout(() => {
+                            volumeControl.style.display = 'none';
+                        }, 500);
+                    }
+                }).catch(e => {
+                    console.error('❌ 手动播放失败:', e);
+                    alert('音乐播放失败，请检查浏览器设置或音频文件');
+                });
+            } else {
+                console.error('音乐元素未找到');
+            }
+        }
+
         // 播放背景音乐的通用函数
         function playBackgroundMusic() {
             console.log('调用 playBackgroundMusic 函数');
@@ -3182,10 +3220,35 @@
             if (backgroundMusicEnabled && backgroundMusic) {
                 if (backgroundMusic.paused) {
                     console.log('尝试播放背景音乐...');
+                    // 设置音量
+                    const volumeSlider = document.getElementById('volumeSlider');
+                    if (volumeSlider) {
+                        backgroundMusic.volume = volumeSlider.value / 100;
+                    } else {
+                        backgroundMusic.volume = 0.3;
+                    }
+
+                    // 尝试播放，添加用户交互后的重试机制
                     backgroundMusic.play().then(() => {
                         console.log('✅ 背景音乐开始播放');
                     }).catch(e => {
                         console.error('❌ 背景音乐播放失败:', e.message);
+                        // 在移动设备上，可能需要用户交互才能播放
+                        if (e.name === 'NotAllowedError') {
+                            console.log('⚠️ 需要用户交互才能播放音频，将在下次点击时重试');
+                            // 添加一次性点击/触摸事件监听器
+                            const retryPlay = function() {
+                                if (backgroundMusic && backgroundMusic.paused && backgroundMusicEnabled) {
+                                    backgroundMusic.play().then(() => {
+                                        console.log('✅ 用户交互后音乐开始播放');
+                                    }).catch(err => {
+                                        console.error('❌ 重试后仍然失败:', err);
+                                    });
+                                }
+                            };
+                            document.addEventListener('click', retryPlay, { once: true });
+                            document.addEventListener('touchstart', retryPlay, { once: true });
+                        }
                     });
                 } else {
                     console.log('背景音乐已经在播放中');
@@ -3960,7 +4023,20 @@
 
             // 初始化背景音乐
             backgroundMusic = document.getElementById('backgroundMusic');
-            backgroundMusic.volume = 0.3; // 设置音量为30%
+            if (backgroundMusic) {
+                backgroundMusic.volume = 0.3; // 设置音量为30%
+                // 添加更多事件监听器以便调试
+                backgroundMusic.addEventListener('error', (e) => {
+                    console.error('音频加载错误:', e);
+                    console.error('错误详情:', backgroundMusic.error);
+                });
+                backgroundMusic.addEventListener('loadedmetadata', () => {
+                    console.log('音频元数据已加载，时长:', backgroundMusic.duration);
+                });
+                backgroundMusic.addEventListener('canplaythrough', () => {
+                    console.log('音频可以完整播放');
+                });
+            }
 
             // 初始化本地存储
             initLocalStorage();
@@ -4821,6 +4897,7 @@
             // 更新背景音乐音量
             if (backgroundMusic) {
                 backgroundMusic.volume = volume;
+                console.log('音量调整为:', volume);
             }
 
             // 更新显示
@@ -4855,7 +4932,21 @@
             // 如果音量大于0且音乐未播放，则开始播放
             if (value > 0 && backgroundMusic && backgroundMusic.paused && !isPaused) {
                 backgroundMusicEnabled = true;
-                backgroundMusic.play().catch(e => console.log('背景音乐播放失败:', e));
+                // 设置音量后尝试播放
+                backgroundMusic.volume = volume;
+                backgroundMusic.play().then(() => {
+                    console.log('✅ 调整音量后音乐开始播放');
+                }).catch(e => {
+                    console.log('背景音乐播放失败:', e);
+                    // 添加触摸事件监听器（移动设备）
+                    const retryPlay = function() {
+                        if (backgroundMusic && backgroundMusic.paused && backgroundMusicEnabled) {
+                            backgroundMusic.play().catch(err => console.error('触摸后播放失败:', err));
+                        }
+                    };
+                    document.addEventListener('touchstart', retryPlay, { once: true });
+                    document.addEventListener('click', retryPlay, { once: true });
+                });
             } else if (value == 0) {
                 backgroundMusicEnabled = false;
                 if (backgroundMusic) {
