@@ -2099,7 +2099,7 @@
         .line-grid {
             display: grid;
             grid-template-columns: repeat(6, 50px);
-            grid-template-rows: repeat(10, 50px);
+            grid-template-rows: repeat(7, 50px);  /* 改为7行 */
             gap: 5px;
             position: relative;
         }
@@ -2120,6 +2120,8 @@
             box-shadow: 0 3px 8px rgba(107, 95, 224, 0.3);
             position: relative;
             overflow: hidden;
+            user-select: none; /* 防止文字选中 */
+            -webkit-tap-highlight-color: transparent; /* 移除移动端点击高亮 */
         }
 
         /* 格子神秘图案 */
@@ -2131,6 +2133,7 @@
             font-weight: bold;
             transform: rotate(-15deg);
             animation: float 3s ease-in-out infinite;
+            pointer-events: none; /* 确保不会阻挡点击 */
         }
 
         @keyframes float {
@@ -2202,6 +2205,17 @@
         }
 
         .grid-cell.error::before {
+            display: none;
+        }
+
+        /* 提示高亮样式 */
+        .grid-cell.hint-highlight {
+            background: linear-gradient(135deg, #FFD700, #FFA500) !important;
+            border-color: #FF8C00 !important;
+            animation: pulse 0.8s infinite;
+        }
+
+        .grid-cell.hint-highlight::before {
             display: none;
         }
 
@@ -2668,37 +2682,31 @@
             
             <div class="home-content">
                 <div class="logo-area">
-                    <div class="logo-cards">
-                        <!-- 第1张卡牌：显示背面（紫色带🎴） -->
-                        <div class="logo-card" id="logoCard1">
-                            <div class="logo-card-face logo-card-front">
-                                🎴
-                            </div>
-                            <div class="logo-card-face logo-card-back">
-                                <div style="font-size: 20px; font-weight: bold;">Hello</div>
-                                <div style="font-size: 16px; margin-top: 5px;">你好</div>
-                            </div>
-                        </div>
-                        <!-- 第2张卡牌：已翻转，显示英文 -->
-                        <div class="logo-card flipped">
-                            <div class="logo-card-face logo-card-front">
-                                🎴
-                            </div>
-                            <div class="logo-card-face logo-card-back">
-                                <div style="font-size: 30px; font-weight: bold; color: #667eea;">Apple</div>
-                            </div>
-                        </div>
-                        <!-- 第3张卡牌：已翻转，显示中文 -->
-                        <div class="logo-card flipped">
-                            <div class="logo-card-face logo-card-front">
-                                🎴
-                            </div>
-                            <div class="logo-card-face logo-card-back">
-                                <div style="font-size: 30px; font-weight: bold; color: #667eea;">苹果</div>
-                            </div>
-                        </div>
+                    <!-- 单词连线图标 -->
+                    <div class="word-line-logo" style="width: 100%; max-width: 320px; height: 120px; background: linear-gradient(135deg, #8B7FFF, #6B5FE0); border-radius: 15px; padding: 15px; box-shadow: 0 5px 20px rgba(107, 95, 224, 0.3); margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+                        <svg viewBox="0 0 300 80" style="width: 100%; height: 100%;">
+                            <!-- 网格背景 -->
+                            <rect x="10" y="10" width="40" height="40" fill="rgba(255,255,255,0.2)" rx="5"/>
+                            <rect x="55" y="10" width="40" height="40" fill="rgba(255,255,255,0.2)" rx="5"/>
+                            <rect x="100" y="10" width="40" height="40" fill="rgba(255,255,255,0.2)" rx="5"/>
+                            <rect x="145" y="10" width="40" height="40" fill="rgba(255,255,255,0.2)" rx="5"/>
+                            <rect x="190" y="10" width="40" height="40" fill="rgba(255,255,255,0.2)" rx="5"/>
+
+                            <!-- 连线 -->
+                            <path d="M 30 30 L 75 30 L 120 30 L 165 30" stroke="#FFD700" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+                            <!-- 字母 -->
+                            <text x="30" y="36" text-anchor="middle" fill="white" font-size="20" font-weight="bold">H</text>
+                            <text x="75" y="36" text-anchor="middle" fill="white" font-size="20" font-weight="bold">E</text>
+                            <text x="120" y="36" text-anchor="middle" fill="white" font-size="20" font-weight="bold">L</text>
+                            <text x="165" y="36" text-anchor="middle" fill="white" font-size="20" font-weight="bold">L</text>
+                            <text x="210" y="36" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-size="20" font-weight="bold">O</text>
+
+                            <!-- 中文 -->
+                            <text x="250" y="36" text-anchor="middle" fill="#FFD700" font-size="16" font-weight="bold">你好</text>
+                        </svg>
                     </div>
-                    <h1 class="game-title">记忆翻牌单词游戏</h1>
+                    <h1 class="game-title">记忆单词连线游戏</h1>
                 </div>
                 
                 <div class="select-group">
@@ -2712,9 +2720,9 @@
                     </select>
                     
                     <select class="select-box" id="difficultySelect">
-                        <option value="easy">🐣 简单模式 (4×4)</option>
-                        <option value="medium" selected>🦊 中等模式 (4×5)</option>
-                        <option value="hard">🦉 困难模式 (4×6)</option>
+                        <option value="easy">🐣 简单模式 (1个单词)</option>
+                        <option value="medium" selected>🦊 中等模式 (2个单词)</option>
+                        <option value="hard">🦉 困难模式 (3个单词)</option>
                     </select>
                 </div>
                 
@@ -2722,14 +2730,6 @@
                     <button class="btn btn-primary" onclick="startGame()">
                         🎮 开始游戏
                     </button>
-                    <div class="button-row">
-                        <button class="btn btn-secondary" onclick="showVocabulary()">
-                            📚 单词本
-                        </button>
-                        <button class="btn btn-green" onclick="showWordBrowse()">
-                            📖 单词浏览
-                        </button>
-                    </div>
                 </div>
                 
                 <!-- 制作信息紧跟在按钮后 -->
@@ -2762,7 +2762,19 @@
                 </div>
                 <div class="header-right" style="display: flex; align-items: center; gap: 12px;">
                     <span id="pauseBtn" onclick="togglePause()" style="cursor: pointer; font-size: 20px; color: #666; padding: 4px;" title="暂停">⏸️</span>
-                    <span id="musicBtn" onclick="toggleBackgroundMusic()" style="cursor: pointer; font-size: 20px; color: #666; padding: 4px;" title="背景音乐">🎵</span>
+                    <div style="position: relative;">
+                        <span id="musicBtn" onclick="toggleVolumeControl()" style="cursor: pointer; font-size: 20px; color: #666; padding: 4px;" title="音量控制">🔊</span>
+                        <div id="volumeControl" style="display: none; position: absolute; top: 100%; right: 0; background: white; border-radius: 10px; padding: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.2); z-index: 1000; width: 150px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="font-size: 14px;">🔇</span>
+                                <input type="range" id="volumeSlider" min="0" max="100" value="50" style="flex: 1;" oninput="adjustVolume(this.value)">
+                                <span style="font-size: 14px;">🔊</span>
+                            </div>
+                            <div style="text-align: center; font-size: 12px; color: #666; margin-top: 5px;">
+                                <span id="volumeValue">50%</span>
+                            </div>
+                        </div>
+                    </div>
                     <span id="replayBtn" onclick="replayObservation()" style="cursor: pointer; font-size: 20px; color: #667eea; padding: 4px;" title="再播放一次">🔁</span>
                 </div>
             </div>
@@ -2772,7 +2784,10 @@
                 <!-- 状态提示行 -->
                 <div class="line-status-bar" id="lineStatusBar">
                     <span class="word-info" id="currentWordInfo">Apple · 苹果</span>
-                    <span class="phase-badge" id="phaseBadge">👀 观察阶段</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="phase-badge" id="phaseBadge" style="margin-right: 15px;">👀 观察阶段</span>
+                        <button id="hintBtn" onclick="showHint()" style="display: none; padding: 4px 12px; background: #FFC107; color: white; border: none; border-radius: 10px; font-size: 12px; cursor: pointer;">💡 提示</button>
+                    </div>
                 </div>
 
                 <!-- 连线网格容器 -->
@@ -3950,6 +3965,24 @@
             // 在首页时自动播放背景音乐
             setupBackgroundMusic();
 
+            // 初始化音量设置
+            const settings = JSON.parse(localStorage.getItem('carGame_settings')) || {};
+            const savedVolume = settings.backgroundMusicVolume || 50;
+            const volumeSlider = document.getElementById('volumeSlider');
+            if (volumeSlider) {
+                volumeSlider.value = savedVolume;
+                adjustVolume(savedVolume);
+            }
+
+            // 点击其他地方关闭音量控制面板
+            document.addEventListener('click', function(e) {
+                const volumeControl = document.getElementById('volumeControl');
+                const musicBtn = document.getElementById('musicBtn');
+                if (volumeControl && !volumeControl.contains(e.target) && e.target !== musicBtn) {
+                    volumeControl.style.display = 'none';
+                }
+            });
+
 
             // 确保第2、3张卡牌保持翻转状态
             document.addEventListener('DOMContentLoaded', function() {
@@ -4766,29 +4799,62 @@
             }
         }
         
-        function toggleBackgroundMusic() {
-            // 控制背景音乐
-            backgroundMusicEnabled = !backgroundMusicEnabled;
-            const settings = JSON.parse(localStorage.getItem('carGame_settings')) || {};
-            settings.backgroundMusicEnabled = backgroundMusicEnabled;
-            localStorage.setItem('carGame_settings', JSON.stringify(settings));
+        // 切换音量控制面板显示
+        function toggleVolumeControl() {
+            const volumeControl = document.getElementById('volumeControl');
+            if (volumeControl) {
+                volumeControl.style.display = volumeControl.style.display === 'none' ? 'block' : 'none';
+            }
+        }
 
-            // 更新音乐按钮显示
-            const musicBtn = document.getElementById('musicBtn');
-            if (musicBtn) {
-                musicBtn.textContent = backgroundMusicEnabled ? '🎵' : '🔕';
+        // 调节音量
+        function adjustVolume(value) {
+            const volume = value / 100;
+
+            // 更新背景音乐音量
+            if (backgroundMusic) {
+                backgroundMusic.volume = volume;
             }
 
-            // 控制背景音乐
-            if (backgroundMusic) {
-                if (backgroundMusicEnabled && !isPaused) {
-                    backgroundMusic.play().catch(e => console.log('背景音乐播放失败:', e));
+            // 更新显示
+            const volumeValue = document.getElementById('volumeValue');
+            if (volumeValue) {
+                volumeValue.textContent = `${value}%`;
+            }
+
+            // 更新音量图标
+            const musicBtn = document.getElementById('musicBtn');
+            if (musicBtn) {
+                if (value == 0) {
+                    musicBtn.textContent = '🔇';
+                    musicBtn.title = '音量：静音';
+                } else if (value < 30) {
+                    musicBtn.textContent = '🔈';
+                    musicBtn.title = '音量：低';
+                } else if (value < 70) {
+                    musicBtn.textContent = '🔉';
+                    musicBtn.title = '音量：中';
                 } else {
-                    backgroundMusic.pause();
+                    musicBtn.textContent = '🔊';
+                    musicBtn.title = '音量：高';
                 }
             }
 
-            console.log('背景音乐：', backgroundMusicEnabled ? '开启' : '关闭');
+            // 保存音量设置
+            const settings = JSON.parse(localStorage.getItem('carGame_settings')) || {};
+            settings.backgroundMusicVolume = value;
+            localStorage.setItem('carGame_settings', JSON.stringify(settings));
+
+            // 如果音量大于0且音乐未播放，则开始播放
+            if (value > 0 && backgroundMusic && backgroundMusic.paused && !isPaused) {
+                backgroundMusicEnabled = true;
+                backgroundMusic.play().catch(e => console.log('背景音乐播放失败:', e));
+            } else if (value == 0) {
+                backgroundMusicEnabled = false;
+                if (backgroundMusic) {
+                    backgroundMusic.pause();
+                }
+            }
         }
         
         // ========== 单词浏览功能 ==========
@@ -5503,6 +5569,28 @@
                 LineGame.startObservePhase();
             } else {
                 console.log('当前阶段不能重播');
+            }
+        }
+
+        // 显示提示
+        function showHint() {
+            if (!window.LineGame || !LineGame.state || LineGame.state.phase !== 'draw') {
+                return;
+            }
+
+            const cells = document.querySelectorAll('.grid-cell');
+
+            // 高亮所有单词的起点
+            for (let i = 0; i < LineGame.state.paths.length && i < LineGame.state.currentWords.length; i++) {
+                const startIndex = LineGame.state.paths[i][0];
+                if (startIndex !== undefined && cells[startIndex]) {
+                    cells[startIndex].classList.add('hint-highlight');
+
+                    // 3秒后移除高亮
+                    setTimeout(() => {
+                        cells[startIndex].classList.remove('hint-highlight');
+                    }, 3000);
+                }
             }
         }
 

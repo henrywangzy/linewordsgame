@@ -7,7 +7,7 @@ const LineGame = {
     // 游戏配置
     config: {
         gridCols: 6,
-        gridRows: 10,
+        gridRows: 7,  // 改为7行以适应手机屏幕
         observeSpeed: 800, // 字母显示时间（毫秒）
         observeInterval: 200, // 字母间隔时间
     },
@@ -38,6 +38,7 @@ const LineGame = {
         isPaused: false, // 游戏是否暂停
         pausedTime: 0, // 累计暂停时间
         pauseStartTime: null, // 暂停开始时间
+        observeTaskId: 0, // 观察任务ID，用于取消上一次的观察
     },
 
     // 初始化游戏
@@ -312,9 +313,18 @@ const LineGame = {
     startObservePhase() {
         if (this.state.isPaused) return;
 
+        // 增加任务ID，用于取消上一次的观察任务
+        this.state.observeTaskId++;
+
         this.state.phase = 'observe';
         this.updatePhase('👀 观察阶段');
         document.getElementById('gameHint').textContent = '请仔细观察字母出现的顺序...';
+
+        // 隐藏提示按钮
+        const hintBtn = document.getElementById('hintBtn');
+        if (hintBtn) {
+            hintBtn.style.display = 'none';
+        }
 
         // 清除所有格子状态
         document.querySelectorAll('.grid-cell').forEach(cell => {
@@ -333,13 +343,25 @@ const LineGame = {
     // 显示所有单词
     async showAllWords() {
         const cells = document.querySelectorAll('.grid-cell');
+        const currentTaskId = this.state.observeTaskId;
 
         // 依次显示每个单词
         for (let wordIndex = 0; wordIndex < this.state.currentWords.length; wordIndex++) {
+            // 检查是否被取消（新的任务已开始）
+            if (currentTaskId !== this.state.observeTaskId) {
+                return;
+            }
+
             // 如果暂停，等待恢复
-            while (this.state.isPaused) {
+            while (this.state.isPaused && currentTaskId === this.state.observeTaskId) {
                 await this.sleep(100);
             }
+
+            // 再次检查是否被取消
+            if (currentTaskId !== this.state.observeTaskId) {
+                return;
+            }
+
             const word = this.state.currentWords[wordIndex].word.toUpperCase();
             const path = this.state.paths[wordIndex];
 
@@ -359,9 +381,19 @@ const LineGame = {
 
             // 显示该单词的字母
             for (let i = 0; i < path.length; i++) {
+                // 检查是否被取消
+                if (currentTaskId !== this.state.observeTaskId) {
+                    return;
+                }
+
                 // 如果暂停，等待恢复
-                while (this.state.isPaused) {
+                while (this.state.isPaused && currentTaskId === this.state.observeTaskId) {
                     await this.sleep(100);
+                }
+
+                // 再次检查是否被取消
+                if (currentTaskId !== this.state.observeTaskId) {
+                    return;
                 }
 
                 const cell = cells[path[i]];
@@ -387,8 +419,10 @@ const LineGame = {
             }
         }
 
-        // 进入连线阶段
-        this.startDrawPhase();
+        // 只有任务没被取消才进入连线阶段
+        if (currentTaskId === this.state.observeTaskId) {
+            this.startDrawPhase();
+        }
     },
 
     // 开始连线阶段
@@ -404,6 +438,12 @@ const LineGame = {
             cell.textContent = '';
             cell.classList.remove('showing');
         });
+
+        // 显示提示按钮
+        const hintBtn = document.getElementById('hintBtn');
+        if (hintBtn) {
+            hintBtn.style.display = 'inline-block';
+        }
 
         // 显示当前需要连接的单词
         if (this.state.currentWords.length > 1) {
@@ -840,9 +880,11 @@ const LineGame = {
         const cell = document.elementFromPoint(touch.clientX, touch.clientY);
         if (cell && cell.classList.contains('grid-cell')) {
             const index = parseInt(cell.dataset.index);
-            const expectedIndex = this.state.path[this.state.userPath.length];
+            const currentPath = this.state.paths[this.state.currentDrawingWordIndex];
+            const currentUserPath = this.state.userPaths[this.state.currentDrawingWordIndex];
+            const expectedIndex = currentPath[currentUserPath.length];
 
-            if (index === expectedIndex && !this.state.userPath.includes(index)) {
+            if (index === expectedIndex && !currentUserPath.includes(index)) {
                 this.addToPath(index);
             }
         }
