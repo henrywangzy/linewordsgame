@@ -1781,6 +1781,7 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            justify-content: space-between;  /* 确保元素合理分布 */
         }
 
         .stars {
@@ -1813,12 +1814,12 @@
         /* 顶部信息栏 */
         .game-header {
             background: white;
-            padding: 12px 15px;
+            padding: 8px 15px;  /* 减少上下间距 */
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            height: 56px;
+            height: 48px;  /* 减少高度 */
             flex-shrink: 0;
         }
 
@@ -2034,10 +2035,12 @@
         /* ============ 连线单词游戏样式 ============ */
         .memory-game-board {
             flex: 1;
-            padding: 5px;
+            padding: 0;  /* 移除所有padding */
+            margin: 0;  /* 确保没有margin */
             display: flex;
             flex-direction: column;
             overflow: visible;
+            gap: 0;  /* 确保子元素之间没有额外间隙 */
         }
 
         /* 状态提示行 */
@@ -2048,7 +2051,7 @@
             display: flex !important;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 5px;
+            margin-bottom: 2px;  /* 减少底部间距，让格子更贴近 */
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             min-height: 36px;
             z-index: 100;
@@ -2078,8 +2081,9 @@
             position: relative;
             display: flex;
             justify-content: center;
-            align-items: center;
-            padding: 5px;
+            align-items: flex-start;  /* 改为顶部对齐 */
+            padding: 0 5px 5px 5px;  /* 只保留左右和底部padding */
+            margin-top: 0;  /* 确保没有顶部margin */
             overflow: visible;
             min-height: 0;
         }
@@ -2233,11 +2237,13 @@
         /* 操作提示区 */
         .game-hint {
             text-align: center;
-            font-size: 14px;
+            font-size: 12px;  /* 进一步缩小字体 */
             color: #666;
-            padding: 8px;
+            padding: 3px;  /* 进一步减少padding */
+            margin-top: 0;  /* 确保没有顶部margin */
             background: rgba(255,255,255,0.8);
             border-radius: 15px;
+            margin-top: 5px;  /* 添加小的顶部间距 */
         }
 
         .memory-card-grid {
@@ -2362,11 +2368,12 @@
         /* 游戏统计栏 */
         .memory-stats {
             background: white;
-            padding: 12px 20px;
+            padding: 8px 15px;  /* 减少上下间距 */
             box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
             display: flex;
             justify-content: space-around;
             align-items: center;
+            flex-shrink: 0;  /* 不压缩 */
         }
 
         .stat-item {
@@ -2374,13 +2381,13 @@
         }
 
         .stat-label {
-            font-size: 12px;
+            font-size: 10px;  /* 缩小字体 */
             color: #999;
-            margin-bottom: 4px;
+            margin-bottom: 2px;  /* 减少间距 */
         }
 
         .stat-value {
-            font-size: 20px;
+            font-size: 16px;  /* 缩小字体 */
             font-weight: bold;
             color: #42A5F5;
         }
@@ -2750,7 +2757,7 @@
                 <!-- 游戏界面 -->
         <div class="screen" id="gameScreen">
             <!-- 游戏顶部信息栏 -->
-            <div class="game-header" style="background: white; padding: 12px 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center;">
+            <div class="game-header" style="background: white; padding: 8px 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; height: 48px;">
                 <div class="header-left" style="display: flex; align-items: center; gap: 10px;">
                     <button class="btn-back" onclick="goHome()" style="width: 32px; height: 32px; border-radius: 50%; border: none; background: #f0f0f0; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 16px;">⬅️</button>
                     <div class="level-info" style="font-size: 14px; font-weight: bold; color: #42A5F5;">
