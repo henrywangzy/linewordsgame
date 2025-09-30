@@ -325,11 +325,11 @@ const LineGame = {
         // gameHint 元素已被移除，不再需要更新
         // document.getElementById('gameHint').textContent = '请仔细观察字母出现的顺序...';
 
-        // 隐藏提示按钮
-        const hintBtn = document.getElementById('hintBtn');
-        if (hintBtn) {
-            hintBtn.style.display = 'none';
-        }
+        // 隐藏提示按钮（已删除按钮）
+        // const hintBtn = document.getElementById('hintBtn');
+        // if (hintBtn) {
+        //     hintBtn.style.display = 'none';
+        // }
 
         // 清除所有格子状态
         document.querySelectorAll('.grid-cell').forEach(cell => {
@@ -441,11 +441,21 @@ const LineGame = {
             cell.classList.remove('showing');
         });
 
-        // 显示提示按钮
-        const hintBtn = document.getElementById('hintBtn');
-        if (hintBtn) {
-            hintBtn.style.display = 'inline-block';
-        }
+        // 标记所有单词的起始字母位置
+        this.state.paths.forEach((path, index) => {
+            if (path && path.length > 0) {
+                const startCell = cells[path[0]];
+                const word = this.state.currentWords[index].word.toUpperCase();
+                startCell.textContent = word[0];
+                startCell.classList.add('start-hint');
+            }
+        });
+
+        // 删除提示按钮（不再需要）
+        // const hintBtn = document.getElementById('hintBtn');
+        // if (hintBtn) {
+        //     hintBtn.style.display = 'inline-block';
+        // }
 
         // 显示当前需要连接的单词
         if (this.state.currentWords.length > 1) {

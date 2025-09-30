@@ -2257,6 +2257,20 @@
             display: none;
         }
 
+        /* 起始字母提示样式 */
+        .grid-cell.start-hint {
+            background: linear-gradient(135deg, #FFE082, #FFD54F);
+            border-color: #FFC107;
+            color: #F57C00;
+            font-size: 22px;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        .grid-cell.start-hint::before {
+            display: none;
+        }
+
         /* 连线样式 */
         .connection-line {
             stroke: #667eea;
@@ -2975,7 +2989,7 @@
                     <span class="word-info" id="currentWordInfo">Apple · 苹果</span>
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <span class="phase-badge" id="phaseBadge" style="margin-right: 15px;">👀 观察阶段</span>
-                        <button id="hintBtn" onclick="showHint()" style="display: none; padding: 4px 12px; background: #FFC107; color: white; border: none; border-radius: 10px; font-size: 12px; cursor: pointer;">💡 提示</button>
+                        <!-- 提示按钮已删除，起始字母会自动标记 -->
                     </div>
                 </div>
 
