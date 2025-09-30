@@ -796,41 +796,34 @@ const LineGame = {
         if (exampleChinese) exampleChinese.textContent = wordData.exampleChinese || '例句翻译';
     },
 
-    // 更新显示所有单词的例句
+    // 更新显示所有单词的例句（合并显示英文和中文）
     updateWordDisplayAll() {
-        const exampleEnglish = document.getElementById('exampleEnglish');
-        const exampleChinese = document.getElementById('exampleChinese');
+        const exampleCombined = document.getElementById('exampleCombined');
 
-        if (!exampleEnglish || !exampleChinese) return;
+        if (!exampleCombined) return;
 
         if (this.state.currentWords.length === 0) {
-            exampleEnglish.textContent = '';
-            exampleChinese.textContent = '';
+            exampleCombined.innerHTML = '';
             return;
         }
 
-        // 拆分并合并所有例句
-        const englishSentences = [];
-        const chineseSentences = [];
-
-        this.state.currentWords.forEach(word => {
+        // 合并所有例句，每行显示"英文 中文"
+        const combinedHTML = this.state.currentWords.map(word => {
             if (word.example) {
                 // 将 "English sentence. 中文翻译。" 拆分
                 const parts = word.example.split(/\.\s+/);
                 if (parts.length >= 2) {
-                    // 第一部分是英文（加回句号）
-                    englishSentences.push(parts[0] + '.');
-                    // 第二部分是中文
-                    chineseSentences.push(parts[1]);
+                    const english = parts[0] + '.';
+                    const chinese = parts[1];
+                    return `<div class="sentence-pair"><span class="en">${english}</span> <span class="zh">${chinese}</span></div>`;
                 } else {
-                    // 如果没有句号分隔，直接使用
-                    englishSentences.push(word.example);
+                    return `<div class="sentence-pair"><span class="en">${word.example}</span></div>`;
                 }
             }
-        });
+            return '';
+        }).filter(s => s).join('');
 
-        exampleEnglish.textContent = englishSentences.join('\n');
-        exampleChinese.textContent = chineseSentences.join('\n');
+        exampleCombined.innerHTML = combinedHTML;
     },
 
     // 朗读单词和例句

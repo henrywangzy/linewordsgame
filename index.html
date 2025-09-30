@@ -2308,29 +2308,31 @@
             gap: 5px;
         }
 
-        .example-english {
+        /* 合并显示英文和中文例句 */
+        .example-combined {
             font-size: 14px;
-            font-weight: 500;
-            color: #2c3e50;
-            line-height: 1.6;
+            line-height: 1.8;
             margin: 0;
-            padding: 8px 10px;
+            padding: 10px 12px;
             background: rgba(102, 126, 234, 0.05);
             border-left: 3px solid #667eea;
             border-radius: 4px;
             white-space: pre-line;  /* 保留换行符 */
         }
 
-        .example-chinese {
-            font-size: 13px;
+        .example-combined .sentence-pair {
+            margin: 6px 0;
+            display: block;
+        }
+
+        .example-combined .en {
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .example-combined .zh {
             color: #7f8c8d;
-            line-height: 1.6;
-            margin: 0;
-            padding: 6px 10px;
-            background: rgba(149, 165, 166, 0.05);
-            border-left: 3px solid #95a5a6;
-            border-radius: 4px;
-            white-space: pre-line;  /* 保留换行符 */
+            margin-left: 8px;
         }
 
         .memory-card-grid {
@@ -2997,8 +2999,8 @@
                 <!-- 例句展示区 -->
                 <div class="word-display-area" id="wordDisplayArea">
                     <div class="word-example" id="wordExample">
-                        <p class="example-english" id="exampleEnglish"></p>
-                        <p class="example-chinese" id="exampleChinese"></p>
+                        <!-- 合并显示英文和中文 -->
+                        <div class="example-combined" id="exampleCombined"></div>
                     </div>
                 </div>
             </div>
