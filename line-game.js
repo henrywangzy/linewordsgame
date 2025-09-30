@@ -378,7 +378,8 @@ const LineGame = {
             const path = this.state.paths[wordIndex];
 
             // 更新底部单词展示区
-            this.updateWordDisplay(wordData);
+            // 注释掉：因为已经在开始时用updateWordDisplayAll()显示所有例句了
+            // this.updateWordDisplay(wordData);
 
             // 显示该单词的字母
             for (let i = 0; i < path.length; i++) {
@@ -677,15 +678,16 @@ const LineGame = {
         }
 
         // 显示单词卡片（显示所有当前回合的单词）
-        if (this.state.currentWords && this.state.currentWords.length > 0) {
-            if (this.state.currentWords.length === 1) {
-                // 单个单词，显示完整信息
-                showWordExample(this.state.currentWords[0]);
-            } else {
-                // 多个单词，显示紧凑版本
-                showMultipleWordExamples(this.state.currentWords);
-            }
-        }
+        // 已删除：因为观察阶段已经有单词朗读和底部展示区，不需要弹窗
+        // if (this.state.currentWords && this.state.currentWords.length > 0) {
+        //     if (this.state.currentWords.length === 1) {
+        //         // 单个单词，显示完整信息
+        //         showWordExample(this.state.currentWords[0]);
+        //     } else {
+        //         // 多个单词，显示紧凑版本
+        //         showMultipleWordExamples(this.state.currentWords);
+        //     }
+        // }
 
         // 播放成功音效
         this.playSound('success');
