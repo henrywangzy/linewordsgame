@@ -7,7 +7,7 @@ const LineGame = {
     // 游戏配置
     config: {
         gridCols: 6,
-        gridRows: 7,  // 改为7行以适应手机屏幕
+        gridRows: 9,  // 9行6列布局
         observeSpeed: 800, // 字母显示时间（毫秒）
         observeInterval: 200, // 字母间隔时间
     },
@@ -367,10 +367,31 @@ const LineGame = {
 
             // 朗读单词
             if ('speechSynthesis' in window) {
-                const utterance = new SpeechSynthesisUtterance(word);
-                utterance.lang = 'en-US';
-                utterance.rate = 0.9;
-                speechSynthesis.speak(utterance);
+                try {
+                    // 先取消之前的朗读
+                    speechSynthesis.cancel();
+
+                    const utterance = new SpeechSynthesisUtterance(word);
+                    utterance.lang = 'en-US';
+                    utterance.rate = 0.9;
+                    utterance.volume = 1.0; // 确保音量最大
+
+                    // 添加错误处理
+                    utterance.onerror = function(event) {
+                        console.error('语音朗读错误:', event);
+                    };
+
+                    // 在某些浏览器中，需要先获取voices列表才能正常工作
+                    if (speechSynthesis.getVoices().length === 0) {
+                        speechSynthesis.addEventListener('voiceschanged', () => {
+                            speechSynthesis.speak(utterance);
+                        }, { once: true });
+                    } else {
+                        speechSynthesis.speak(utterance);
+                    }
+                } catch (error) {
+                    console.error('朗读单词失败:', error);
+                }
             }
 
             // 显示单词编号

@@ -2060,7 +2060,7 @@
             display: flex !important;
             justify-content: space-between;
             align-items: center;
-            margin: 5px 10px;  /* 左右10px，上下5px */
+            margin: 3px 10px;  /* 减少上下间距为3px */
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             min-height: 36px;
             z-index: 100;
@@ -2110,9 +2110,9 @@
         /* 网格 */
         .line-grid {
             display: grid;
-            grid-template-columns: repeat(6, 52px);  /* 稍微增大格子 */
-            grid-template-rows: repeat(7, 52px);  /* 保持良好的点击体验 */
-            gap: 5px;  /* 边距设置为5px */
+            grid-template-columns: repeat(6, 48px);  /* 9行6列,稍微缩小格子 */
+            grid-template-rows: repeat(9, 48px);  /* 9行布局 */
+            gap: 4px;  /* 减小间距以适应更多行 */
             position: relative;
             padding: 0;  /* 移除外围padding */
             margin: 0 auto;  /* 居中显示 */
@@ -2121,8 +2121,8 @@
 
         /* 格子 */
         .grid-cell {
-            width: 52px;  /* 匹配网格大小 */
-            height: 52px;  /* 保持点击区域适中 */
+            width: 48px;  /* 匹配网格大小 */
+            height: 48px;  /* 保持点击区域适中 */
             background: linear-gradient(135deg, #8B7FFF 0%, #6B5FE0 100%);
             border: 2px solid #5a4fcf;
             border-radius: 8px;
