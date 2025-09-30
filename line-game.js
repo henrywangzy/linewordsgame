@@ -692,7 +692,11 @@ const LineGame = {
         // 播放成功音效
         this.playSound('success');
 
-        // 不再自动进入下一个单词，等待用户点击继续按钮
+        // 自动进入下一个单词（延迟1.5秒）
+        setTimeout(() => {
+            this.state.currentWordIndex++;
+            this.nextWord();
+        }, 1500);
     },
 
     // 绘制连线
