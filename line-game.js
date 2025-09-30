@@ -228,6 +228,8 @@ const LineGame = {
         const totalCells = this.config.gridRows * this.config.gridCols;
         let allUsedCells = new Set();
         this.state.paths = [];
+        let retryCount = 0;
+        const maxRetries = 5;
 
         for (let wordIndex = 0; wordIndex < this.state.currentWords.length; wordIndex++) {
             const word = this.state.currentWords[wordIndex].word.toUpperCase();
@@ -242,8 +244,22 @@ const LineGame = {
             }
 
             if (!path) {
-                console.error('无法生成不重叠的路径，重新开始');
-                // 如果无法生成，清空已用格子重试
+                console.error('无法生成不重叠的路径，尝试重新开始');
+                retryCount++;
+
+                if (retryCount >= maxRetries) {
+                    console.error('路径生成失败次数过多，使用备用方案');
+                    // 备用方案：允许路径重叠
+                    allUsedCells.clear();
+                    path = this.generateSinglePath(word, new Set());
+                }
+
+                if (!path) {
+                    console.error('备用方案也失败，跳过该单词');
+                    continue;
+                }
+
+                // 如果找到路径，清空并重新开始
                 allUsedCells.clear();
                 this.state.paths = [];
                 wordIndex = -1; // 重新开始
@@ -645,7 +661,7 @@ const LineGame = {
                     style="margin: 0 5px; padding: 8px 20px; background: #667eea; color: white; border: none; border-radius: 15px; cursor: pointer; font-size: 14px;">
                     重试
                 </button>
-                <button onclick="LineGame.state.currentWordIndex++; LineGame.nextWord();"
+                <button onclick="LineGame.nextWord();"
                     style="margin: 0 5px; padding: 8px 20px; background: #4CAF50; color: white; border: none; border-radius: 15px; cursor: pointer; font-size: 14px;">
                     跳过
                 </button>
@@ -662,7 +678,7 @@ const LineGame = {
         const hintEl = document.getElementById('gameHint');
         if (hintEl) hintEl.innerHTML = `
             <span>太棒了！</span>
-            <button onclick="if(window.LineGame && LineGame.state) { LineGame.state.currentWordIndex++; LineGame.nextWord(); }"
+            <button onclick="if(window.LineGame && LineGame.state) { LineGame.nextWord(); }"
                 style="margin-left: 10px; padding: 5px 15px; background: #4CAF50; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 14px;">
                 继续下一个
             </button>
@@ -704,7 +720,7 @@ const LineGame = {
 
         // 自动进入下一个单词（延迟1.5秒）
         setTimeout(() => {
-            this.state.currentWordIndex++;
+            // 不在这里增加索引，nextWord()会增加
             this.nextWord();
         }, 1500);
     },
@@ -1119,39 +1135,47 @@ const LineGame = {
 
     // 播放音效
     playSound(type) {
-        // 简单的音效实现
-        const audio = new Audio();
-        switch(type) {
-            case 'ding':
-                // 使用Web Audio API创建简单音效
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
+        // 简单的音效实现（添加错误处理）
+        try {
+            switch(type) {
+                case 'ding':
+                    // 使用Web Audio API创建简单音效
+                    if (!window.AudioContext && !window.webkitAudioContext) {
+                        return; // 不支持Web Audio API
+                    }
 
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
 
-                oscillator.frequency.value = 800;
-                oscillator.type = 'sine';
-                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
 
-                oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + 0.1);
-                break;
+                    oscillator.frequency.value = 800;
+                    oscillator.type = 'sine';
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
 
-            case 'correct':
-                // 正确音效
-                break;
-            case 'wrong':
-                // 错误音效
-                break;
-            case 'success':
-                // 成功音效
-                break;
-            case 'ready':
-                // 准备音效
-                break;
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.1);
+                    break;
+
+                case 'correct':
+                    // 正确音效
+                    break;
+                case 'wrong':
+                    // 错误音效
+                    break;
+                case 'success':
+                    // 成功音效
+                    break;
+                case 'ready':
+                    // 准备音效
+                    break;
+            }
+        } catch (error) {
+            // 音效播放失败不影响游戏
+            console.log('音效播放失败:', error.message);
         }
     },
 
