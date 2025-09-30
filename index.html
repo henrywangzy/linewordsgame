@@ -2115,7 +2115,7 @@
             gap: 4px;  /* 减小间距以适应更多行 */
             position: relative;
             padding: 0;  /* 移除外围padding */
-            margin: 0 auto;  /* 居中显示 */
+            margin: 0 1px;  /* 左右边距1px */
             width: fit-content;  /* 宽度自适应内容 */
         }
 
@@ -2247,20 +2247,56 @@
             filter: drop-shadow(0 2px 4px rgba(102, 126, 234, 0.4));
         }
 
-        /* 操作提示区 */
-        .game-hint {
-            position: absolute;  /* 改为绝对定位 */
-            bottom: 5px;  /* 贴近底部 */
-            left: 50%;
-            transform: translateX(-50%);
-            text-align: center;
-            font-size: 12px;
+        /* 单词展示区 */
+        .word-display-area {
+            flex-shrink: 0;
+            background: white;
+            border-radius: 15px 15px 0 0;
+            padding: 15px;
+            margin: 8px 8px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .word-main {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .word-english {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .word-chinese {
+            font-size: 18px;
             color: #666;
-            padding: 3px 15px;
-            background: rgba(255,255,255,0.9);
-            border-radius: 15px;
-            white-space: nowrap;  /* 不换行 */
-            z-index: 10;
+        }
+
+        .word-example {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .example-english {
+            font-size: 14px;
+            color: #333;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .example-chinese {
+            font-size: 13px;
+            color: #999;
+            line-height: 1.5;
+            margin: 0;
         }
 
         .memory-card-grid {
@@ -2883,9 +2919,16 @@
                     </div>
                 </div>
 
-                <!-- 操作提示区 -->
-                <div class="game-hint" id="gameHint">
-                    请仔细观察字母出现的顺序...
+                <!-- 单词展示区 -->
+                <div class="word-display-area" id="wordDisplayArea">
+                    <div class="word-main" id="wordMain">
+                        <span class="word-english" id="wordEnglish">Word</span>
+                        <span class="word-chinese" id="wordChinese">· 单词</span>
+                    </div>
+                    <div class="word-example" id="wordExample">
+                        <p class="example-english" id="exampleEnglish">Example sentence here.</p>
+                        <p class="example-chinese" id="exampleChinese">例句翻译</p>
+                    </div>
                 </div>
             </div>
 

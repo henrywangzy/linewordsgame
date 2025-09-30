@@ -362,43 +362,15 @@ const LineGame = {
                 return;
             }
 
-            const word = this.state.currentWords[wordIndex].word.toUpperCase();
+            const wordData = this.state.currentWords[wordIndex];
+            const word = wordData.word.toUpperCase();
             const path = this.state.paths[wordIndex];
 
-            // 朗读单词
-            if ('speechSynthesis' in window) {
-                try {
-                    // 先取消之前的朗读
-                    speechSynthesis.cancel();
+            // 更新底部单词展示区
+            this.updateWordDisplay(wordData);
 
-                    const utterance = new SpeechSynthesisUtterance(word);
-                    utterance.lang = 'en-US';
-                    utterance.rate = 0.9;
-                    utterance.volume = 1.0; // 确保音量最大
-
-                    // 添加错误处理
-                    utterance.onerror = function(event) {
-                        console.error('语音朗读错误:', event);
-                    };
-
-                    // 在某些浏览器中，需要先获取voices列表才能正常工作
-                    if (speechSynthesis.getVoices().length === 0) {
-                        speechSynthesis.addEventListener('voiceschanged', () => {
-                            speechSynthesis.speak(utterance);
-                        }, { once: true });
-                    } else {
-                        speechSynthesis.speak(utterance);
-                    }
-                } catch (error) {
-                    console.error('朗读单词失败:', error);
-                }
-            }
-
-            // 显示单词编号
-            if (this.state.currentWords.length > 1) {
-                document.getElementById('gameHint').textContent =
-                    `正在显示第 ${wordIndex + 1} 个单词: ${word}`;
-            }
+            // 朗读单词和例句
+            this.speakWordAndExample(wordData);
 
             // 显示该单词的字母
             for (let i = 0; i < path.length; i++) {
@@ -792,6 +764,79 @@ const LineGame = {
         const errorStepsEl = document.getElementById('errorStepsValue');
         if (errorStepsEl) {
             errorStepsEl.textContent = this.state.errorSteps;
+        }
+    },
+
+    // 更新单词展示区
+    updateWordDisplay(wordData) {
+        if (!wordData) return;
+
+        const wordEnglish = document.getElementById('wordEnglish');
+        const wordChinese = document.getElementById('wordChinese');
+        const exampleEnglish = document.getElementById('exampleEnglish');
+        const exampleChinese = document.getElementById('exampleChinese');
+
+        if (wordEnglish) wordEnglish.textContent = wordData.word;
+        if (wordChinese) wordChinese.textContent = `· ${wordData.chinese}`;
+        if (exampleEnglish) exampleEnglish.textContent = wordData.example || '';
+        if (exampleChinese) exampleChinese.textContent = wordData.exampleChinese || '';
+    },
+
+    // 朗读单词和例句
+    speakWordAndExample(wordData) {
+        if (!wordData || !('speechSynthesis' in window)) return;
+
+        try {
+            speechSynthesis.cancel();
+
+            // 1. 朗读英文单词
+            const wordUtterance = new SpeechSynthesisUtterance(wordData.word);
+            wordUtterance.lang = 'en-US';
+            wordUtterance.rate = 0.8;
+            wordUtterance.volume = 1.0;
+
+            // 2. 朗读完单词后,朗读中文翻译
+            wordUtterance.onend = () => {
+                setTimeout(() => {
+                    const chineseUtterance = new SpeechSynthesisUtterance(wordData.chinese);
+                    chineseUtterance.lang = 'zh-CN';
+                    chineseUtterance.rate = 0.8;
+                    chineseUtterance.volume = 1.0;
+
+                    // 3. 朗读完中文后,朗读英文例句
+                    chineseUtterance.onend = () => {
+                        if (wordData.example) {
+                            setTimeout(() => {
+                                const exampleUtterance = new SpeechSynthesisUtterance(wordData.example);
+                                exampleUtterance.lang = 'en-US';
+                                exampleUtterance.rate = 0.8;
+                                exampleUtterance.volume = 1.0;
+
+                                // 4. 朗读完例句后,朗读例句中文翻译
+                                exampleUtterance.onend = () => {
+                                    if (wordData.exampleChinese) {
+                                        setTimeout(() => {
+                                            const exampleChineseUtterance = new SpeechSynthesisUtterance(wordData.exampleChinese);
+                                            exampleChineseUtterance.lang = 'zh-CN';
+                                            exampleChineseUtterance.rate = 0.8;
+                                            exampleChineseUtterance.volume = 1.0;
+                                            speechSynthesis.speak(exampleChineseUtterance);
+                                        }, 300);
+                                    }
+                                };
+
+                                speechSynthesis.speak(exampleUtterance);
+                            }, 300);
+                        }
+                    };
+
+                    speechSynthesis.speak(chineseUtterance);
+                }, 300);
+            };
+
+            speechSynthesis.speak(wordUtterance);
+        } catch (error) {
+            console.error('朗读失败:', error);
         }
     },
 
