@@ -2129,14 +2129,14 @@
         .line-grid {
             display: grid;
             grid-template-columns: repeat(6, 1fr);  /* 6列平均分配宽度 */
-            grid-template-rows: repeat(7, 1fr);  /* 7行 */
+            grid-template-rows: repeat(8, 1fr);  /* 8行 */
             gap: 3px;  /* 格子间距3px */
             position: relative;
             padding: 0;
-            margin: 0;
+            margin: 0 0 5px 0;  /* 底部5px间距 */
             width: 100%;  /* 充满容器宽度 */
             max-width: 380px;  /* 最大宽度限制 */
-            aspect-ratio: 6 / 7;  /* 保持6:7比例 */
+            aspect-ratio: 6 / 8;  /* 保持6:8比例 */
         }
 
         /* 格子 */

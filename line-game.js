@@ -7,7 +7,7 @@ const LineGame = {
     // 游戏配置
     config: {
         gridCols: 6,
-        gridRows: 7,  // 7行6列布局
+        gridRows: 8,  // 8行6列布局
         observeSpeed: 800, // 字母显示时间（毫秒）
         observeInterval: 200, // 字母间隔时间
     },
