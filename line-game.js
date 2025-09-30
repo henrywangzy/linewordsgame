@@ -176,8 +176,13 @@ const LineGame = {
         this.state.attempts = 0;
         this.state.currentDrawingWordIndex = 0;
 
-        // 更新显示
-        this.updateWordDisplay();
+        // 更新状态栏显示
+        this.updateWordInfo();
+
+        // 更新底部单词展示区 - 显示第一个单词
+        if (this.state.currentWords.length > 0) {
+            this.updateWordDisplay(this.state.currentWords[0]);
+        }
 
         // 生成所有单词的路径（确保不重叠）
         this.generateAllPaths();
@@ -186,8 +191,8 @@ const LineGame = {
         this.startObservePhase();
     },
 
-    // 更新单词显示
-    updateWordDisplay() {
+    // 更新状态栏单词信息
+    updateWordInfo() {
         const wordInfoEl = document.getElementById('currentWordInfo');
         if (wordInfoEl) {
             if (this.state.currentWords.length === 1) {

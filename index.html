@@ -2107,7 +2107,7 @@
             flex: 1;  /* 允许伸缩以填充空间 */
             position: relative;
             display: flex;
-            justify-content: center;
+            justify-content: flex-start;  /* 从左侧开始,不居中 */
             align-items: flex-start;  /* 从顶部对齐 */
             padding: 10px 0;  /* 上下各10px间距 */
             margin: 0;  /* 移除所有margin */
@@ -2133,7 +2133,7 @@
             gap: 4px;  /* 减小间距以适应更多行 */
             position: relative;
             padding: 0;  /* 移除外围padding */
-            margin: 0 1px;  /* 左右边距1px */
+            margin: 0;  /* 移除边距,贴边显示 */
             width: fit-content;  /* 宽度自适应内容 */
         }
 
