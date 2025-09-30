@@ -2060,7 +2060,7 @@
             display: flex !important;
             justify-content: space-between;
             align-items: center;
-            margin: 3px 10px;  /* 减少上下间距为3px */
+            margin: 0 10px 5px;  /* 顶部0px,左右10px,底部5px */
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             min-height: 36px;
             z-index: 100;
@@ -2090,8 +2090,8 @@
             position: relative;
             display: flex;
             justify-content: center;
-            align-items: center;  /* 居中对齐 */
-            padding: 0;  /* 移除所有padding */
+            align-items: flex-start;  /* 从顶部对齐 */
+            padding: 10px 0;  /* 上下各10px间距 */
             margin: 0;  /* 移除所有margin */
             overflow: visible;
         }
