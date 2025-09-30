@@ -794,20 +794,14 @@ const LineGame = {
             return;
         }
 
-        // 合并所有例句,用编号和换行分隔
+        // 合并所有例句,用换行分隔
         const englishSentences = this.state.currentWords
-            .map((word, index) => {
-                const num = this.state.currentWords.length > 1 ? `${index + 1}. ` : '';
-                return `${num}${word.example || ''}`;
-            })
+            .map(word => word.example || '')
             .filter(s => s.trim())
             .join('\n');
 
         const chineseSentences = this.state.currentWords
-            .map((word, index) => {
-                const num = this.state.currentWords.length > 1 ? `${index + 1}. ` : '';
-                return `${num}${word.exampleChinese || ''}`;
-            })
+            .map(word => word.exampleChinese || '')
             .filter(s => s.trim())
             .join('\n');
 
