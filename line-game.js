@@ -7,7 +7,7 @@ const LineGame = {
     // 游戏配置
     config: {
         gridCols: 6,
-        gridRows: 9,  // 9行6列布局
+        gridRows: 7,  // 7行6列布局
         observeSpeed: 800, // 字母显示时间（毫秒）
         observeInterval: 200, // 字母间隔时间
     },
@@ -179,10 +179,8 @@ const LineGame = {
         // 更新状态栏显示
         this.updateWordInfo();
 
-        // 更新底部单词展示区 - 显示第一个单词
-        if (this.state.currentWords.length > 0) {
-            this.updateWordDisplay(this.state.currentWords[0]);
-        }
+        // 更新底部单词展示区 - 显示所有单词的例句
+        this.updateWordDisplayAll();
 
         // 生成所有单词的路径（确保不重叠）
         this.generateAllPaths();
@@ -772,19 +770,49 @@ const LineGame = {
         }
     },
 
-    // 更新单词展示区
+    // 更新单词展示区(只显示例句)
     updateWordDisplay(wordData) {
         if (!wordData) return;
 
-        const wordEnglish = document.getElementById('wordEnglish');
-        const wordChinese = document.getElementById('wordChinese');
         const exampleEnglish = document.getElementById('exampleEnglish');
         const exampleChinese = document.getElementById('exampleChinese');
 
-        if (wordEnglish) wordEnglish.textContent = wordData.word;
-        if (wordChinese) wordChinese.textContent = `· ${wordData.chinese}`;
-        if (exampleEnglish) exampleEnglish.textContent = wordData.example || '';
-        if (exampleChinese) exampleChinese.textContent = wordData.exampleChinese || '';
+        if (exampleEnglish) exampleEnglish.textContent = wordData.example || 'Example sentence.';
+        if (exampleChinese) exampleChinese.textContent = wordData.exampleChinese || '例句翻译';
+    },
+
+    // 更新显示所有单词的例句
+    updateWordDisplayAll() {
+        const exampleEnglish = document.getElementById('exampleEnglish');
+        const exampleChinese = document.getElementById('exampleChinese');
+
+        if (!exampleEnglish || !exampleChinese) return;
+
+        if (this.state.currentWords.length === 0) {
+            exampleEnglish.textContent = '';
+            exampleChinese.textContent = '';
+            return;
+        }
+
+        // 合并所有例句,用编号和换行分隔
+        const englishSentences = this.state.currentWords
+            .map((word, index) => {
+                const num = this.state.currentWords.length > 1 ? `${index + 1}. ` : '';
+                return `${num}${word.example || ''}`;
+            })
+            .filter(s => s.trim())
+            .join('\n');
+
+        const chineseSentences = this.state.currentWords
+            .map((word, index) => {
+                const num = this.state.currentWords.length > 1 ? `${index + 1}. ` : '';
+                return `${num}${word.exampleChinese || ''}`;
+            })
+            .filter(s => s.trim())
+            .join('\n');
+
+        exampleEnglish.textContent = englishSentences;
+        exampleChinese.textContent = chineseSentences;
     },
 
     // 朗读单词和例句

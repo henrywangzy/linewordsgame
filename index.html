@@ -2107,10 +2107,10 @@
             flex: 1;  /* 允许伸缩以填充空间 */
             position: relative;
             display: flex;
-            justify-content: flex-start;  /* 从左侧开始,不居中 */
+            justify-content: center;  /* 居中对齐 */
             align-items: flex-start;  /* 从顶部对齐 */
-            padding: 10px 0;  /* 上下各10px间距 */
-            margin: 0;  /* 移除所有margin */
+            padding: 10px 5px;  /* 上下10px,左右5px间距 */
+            margin: 0;
             overflow: visible;
         }
 
@@ -2128,19 +2128,22 @@
         /* 网格 */
         .line-grid {
             display: grid;
-            grid-template-columns: repeat(6, 48px);  /* 9行6列,稍微缩小格子 */
-            grid-template-rows: repeat(9, 48px);  /* 9行布局 */
-            gap: 4px;  /* 减小间距以适应更多行 */
+            grid-template-columns: repeat(6, 1fr);  /* 6列平均分配宽度 */
+            grid-template-rows: repeat(7, 1fr);  /* 7行 */
+            gap: 3px;  /* 格子间距3px */
             position: relative;
-            padding: 0;  /* 移除外围padding */
-            margin: 0;  /* 移除边距,贴边显示 */
-            width: fit-content;  /* 宽度自适应内容 */
+            padding: 0;
+            margin: 0;
+            width: 100%;  /* 充满容器宽度 */
+            max-width: 380px;  /* 最大宽度限制 */
+            aspect-ratio: 6 / 7;  /* 保持6:7比例 */
         }
 
         /* 格子 */
         .grid-cell {
-            width: 48px;  /* 匹配网格大小 */
-            height: 48px;  /* 保持点击区域适中 */
+            width: 100%;  /* 充满格子空间 */
+            height: 100%;
+            aspect-ratio: 1;  /* 保持正方形 */
             background: linear-gradient(135deg, #8B7FFF 0%, #6B5FE0 100%);
             border: 2px solid #5a4fcf;
             border-radius: 8px;
@@ -2306,15 +2309,17 @@
         .example-english {
             font-size: 14px;
             color: #333;
-            line-height: 1.5;
+            line-height: 1.8;
             margin: 0;
+            white-space: pre-line;  /* 保留换行符 */
         }
 
         .example-chinese {
             font-size: 13px;
             color: #999;
-            line-height: 1.5;
+            line-height: 1.8;
             margin: 0;
+            white-space: pre-line;  /* 保留换行符 */
         }
 
         .memory-card-grid {
@@ -2978,15 +2983,11 @@
                     </div>
                 </div>
 
-                <!-- 单词展示区 -->
+                <!-- 例句展示区 -->
                 <div class="word-display-area" id="wordDisplayArea">
-                    <div class="word-main" id="wordMain">
-                        <span class="word-english" id="wordEnglish">Word</span>
-                        <span class="word-chinese" id="wordChinese">· 单词</span>
-                    </div>
                     <div class="word-example" id="wordExample">
-                        <p class="example-english" id="exampleEnglish">Example sentence here.</p>
-                        <p class="example-chinese" id="exampleChinese">例句翻译</p>
+                        <p class="example-english" id="exampleEnglish"></p>
+                        <p class="example-chinese" id="exampleChinese"></p>
                     </div>
                 </div>
             </div>
