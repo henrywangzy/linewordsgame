@@ -701,7 +701,7 @@ const LineGame = {
         const toCol = toIndex % this.config.gridCols;
 
         // 计算SVG坐标（基于格子大小和间距）
-        const cellSize = 50;  // 格子大小
+        const cellSize = 52;  // 格子大小调整为52px
         const gap = 5;        // 间距
 
         const x1 = fromCol * (cellSize + gap) + cellSize / 2;
