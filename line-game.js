@@ -348,6 +348,9 @@ const LineGame = {
         const cells = document.querySelectorAll('.grid-cell');
         const currentTaskId = this.state.observeTaskId;
 
+        // 在观察阶段开始时，一次性朗读所有单词
+        this.speakAllWords();
+
         // 依次显示每个单词
         for (let wordIndex = 0; wordIndex < this.state.currentWords.length; wordIndex++) {
             // 检查是否被取消（新的任务已开始）
@@ -371,9 +374,6 @@ const LineGame = {
 
             // 更新底部单词展示区
             this.updateWordDisplay(wordData);
-
-            // 朗读单词和例句
-            this.speakWordAndExample(wordData);
 
             // 显示该单词的字母
             for (let i = 0; i < path.length; i++) {
@@ -862,6 +862,92 @@ const LineGame = {
             };
 
             speechSynthesis.speak(wordUtterance);
+        } catch (error) {
+            console.error('朗读失败:', error);
+        }
+    },
+
+    // 按顺序朗读所有单词的完整信息
+    speakAllWords() {
+        if (!('speechSynthesis' in window) || this.state.currentWords.length === 0) return;
+
+        try {
+            speechSynthesis.cancel();
+
+            // 递归函数，按顺序朗读每个单词
+            const speakWordAtIndex = (index) => {
+                if (index >= this.state.currentWords.length) return;
+
+                const wordData = this.state.currentWords[index];
+
+                // 1. 朗读英文单词
+                const wordUtterance = new SpeechSynthesisUtterance(wordData.word);
+                wordUtterance.lang = 'en-US';
+                wordUtterance.rate = 0.8;
+                wordUtterance.volume = 1.0;
+
+                // 2. 朗读完单词后,朗读中文翻译
+                wordUtterance.onend = () => {
+                    setTimeout(() => {
+                        const chineseUtterance = new SpeechSynthesisUtterance(wordData.chinese);
+                        chineseUtterance.lang = 'zh-CN';
+                        chineseUtterance.rate = 0.8;
+                        chineseUtterance.volume = 1.0;
+
+                        // 3. 朗读完中文后,朗读英文例句
+                        chineseUtterance.onend = () => {
+                            if (wordData.example) {
+                                setTimeout(() => {
+                                    const exampleUtterance = new SpeechSynthesisUtterance(wordData.example);
+                                    exampleUtterance.lang = 'en-US';
+                                    exampleUtterance.rate = 0.8;
+                                    exampleUtterance.volume = 1.0;
+
+                                    // 4. 朗读完例句后,朗读例句中文翻译
+                                    exampleUtterance.onend = () => {
+                                        if (wordData.exampleChinese) {
+                                            setTimeout(() => {
+                                                const exampleChineseUtterance = new SpeechSynthesisUtterance(wordData.exampleChinese);
+                                                exampleChineseUtterance.lang = 'zh-CN';
+                                                exampleChineseUtterance.rate = 0.8;
+                                                exampleChineseUtterance.volume = 1.0;
+
+                                                // 5. 朗读完例句翻译后，继续朗读下一个单词
+                                                exampleChineseUtterance.onend = () => {
+                                                    setTimeout(() => {
+                                                        speakWordAtIndex(index + 1);
+                                                    }, 500);
+                                                };
+
+                                                speechSynthesis.speak(exampleChineseUtterance);
+                                            }, 300);
+                                        } else {
+                                            // 没有例句翻译，直接朗读下一个单词
+                                            setTimeout(() => {
+                                                speakWordAtIndex(index + 1);
+                                            }, 500);
+                                        }
+                                    };
+
+                                    speechSynthesis.speak(exampleUtterance);
+                                }, 300);
+                            } else {
+                                // 没有例句，直接朗读下一个单词
+                                setTimeout(() => {
+                                    speakWordAtIndex(index + 1);
+                                }, 500);
+                            }
+                        };
+
+                        speechSynthesis.speak(chineseUtterance);
+                    }, 300);
+                };
+
+                speechSynthesis.speak(wordUtterance);
+            };
+
+            // 从第一个单词开始朗读
+            speakWordAtIndex(0);
         } catch (error) {
             console.error('朗读失败:', error);
         }
