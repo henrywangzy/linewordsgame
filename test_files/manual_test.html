@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>手动测试朗读</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            margin: 10px;
+            cursor: pointer;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        #log {
+            background: #f5f5f5;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .log-item {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #667eea;
+            padding-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>语音朗读测试</h1>
+    <div>
+        <button onclick="testBasicSpeech()">测试基础语音</button>
+        <button onclick="testSequentialSpeech()">测试顺序朗读</button>
+        <button onclick="testGameSpeech()">测试游戏朗读</button>
+        <button onclick="clearLog()">清空日志</button>
+    </div>
+    <div id="log"></div>
+
+    <script>
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const item = document.createElement('div');
+            item.className = 'log-item';
+            item.textContent = new Date().toLocaleTimeString() + ' - ' + message;
+            logDiv.appendChild(item);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        function testBasicSpeech() {
+            log('🔊 测试基础语音合成');
+
+            if (!('speechSynthesis' in window)) {
+                log('❌ 浏览器不支持语音合成');
+                return;
+            }
+
+            log('✅ 浏览器支持语音合成');
+
+            speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance('Hello World');
+            utterance.lang = 'en-US';
+            utterance.rate = 0.8;
+
+            utterance.onstart = () => log('🔊 开始朗读');
+            utterance.onend = () => log('✅ 朗读结束');
+            utterance.onerror = (e) => log('❌ 朗读错误: ' + e.error);
+
+            speechSynthesis.speak(utterance);
+            log('📤 已调用 speak()');
+        }
+
+        function testSequentialSpeech() {
+            log('🔊 测试顺序朗读');
+
+            if (!('speechSynthesis' in window)) {
+                log('❌ 浏览器不支持语音合成');
+                return;
+            }
+
+            speechSynthesis.cancel();
+
+            const words = ['Hello', '你好', 'World', '世界'];
+
+            function speakWord(index) {
+                if (index >= words.length) {
+                    log('✅ 所有单词朗读完成');
+                    return;
+                }
+
+                const word = words[index];
+                const lang = /[\u4e00-\u9fa5]/.test(word) ? 'zh-CN' : 'en-US';
+
+                log(`🔊 朗读第 ${index + 1} 个: ${word} (${lang})`);
+
+                const utterance = new SpeechSynthesisUtterance(word);
+                utterance.lang = lang;
+                utterance.rate = 0.8;
+
+                utterance.onend = () => {
+                    log(`✅ 第 ${index + 1} 个朗读完成`);
+                    setTimeout(() => speakWord(index + 1), 500);
+                };
+
+                utterance.onerror = (e) => {
+                    log(`❌ 朗读错误: ${e.error}`);
+                    setTimeout(() => speakWord(index + 1), 500);
+                };
+
+                speechSynthesis.speak(utterance);
+            }
+
+            speakWord(0);
+        }
+
+        function testGameSpeech() {
+            log('🔊 测试游戏朗读逻辑');
+
+            const testWords = [
+                {
+                    word: 'Apple',
+                    chinese: '苹果',
+                    example: 'I like apples. 我喜欢苹果。'
+                },
+                {
+                    word: 'Book',
+                    chinese: '书',
+                    example: 'This is a book. 这是一本书。'
+                }
+            ];
+
+            if (!('speechSynthesis' in window)) {
+                log('❌ 浏览器不支持语音合成');
+                return;
+            }
+
+            speechSynthesis.cancel();
+
+            function speakWordAtIndex(index) {
+                if (index >= testWords.length) {
+                    log('✅ 所有单词朗读完成');
+                    return;
+                }
+
+                const wordData = testWords[index];
+                log(`🔊 朗读第 ${index + 1} 个单词: ${wordData.word}`);
+
+                // 1. 朗读英文单词
+                const wordUtterance = new SpeechSynthesisUtterance(wordData.word);
+                wordUtterance.lang = 'en-US';
+                wordUtterance.rate = 0.8;
+
+                wordUtterance.onend = () => {
+                    log(`  ✅ 单词朗读完成`);
+                    setTimeout(() => {
+                        // 2. 朗读中文翻译
+                        log(`  🔊 朗读翻译: ${wordData.chinese}`);
+                        const chineseUtterance = new SpeechSynthesisUtterance(wordData.chinese);
+                        chineseUtterance.lang = 'zh-CN';
+                        chineseUtterance.rate = 0.8;
+
+                        chineseUtterance.onend = () => {
+                            log(`  ✅ 翻译朗读完成`);
+
+                            // 拆分例句
+                            const parts = wordData.example.split(/\.\s+/);
+                            const englishExample = parts.length >= 2 ? (parts[0] + '.') : wordData.example;
+                            const chineseExample = parts.length >= 2 ? parts[1] : '';
+
+                            setTimeout(() => {
+                                log(`  🔊 朗读例句: ${englishExample}`);
+                                const exampleUtterance = new SpeechSynthesisUtterance(englishExample);
+                                exampleUtterance.lang = 'en-US';
+                                exampleUtterance.rate = 0.8;
+
+                                exampleUtterance.onend = () => {
+                                    log(`  ✅ 例句朗读完成`);
+                                    if (chineseExample) {
+                                        setTimeout(() => {
+                                            log(`  🔊 朗读例句翻译: ${chineseExample}`);
+                                            const exChUtterance = new SpeechSynthesisUtterance(chineseExample);
+                                            exChUtterance.lang = 'zh-CN';
+                                            exChUtterance.rate = 0.8;
+
+                                            exChUtterance.onend = () => {
+                                                log(`  ✅ 例句翻译朗读完成`);
+                                                setTimeout(() => speakWordAtIndex(index + 1), 500);
+                                            };
+
+                                            speechSynthesis.speak(exChUtterance);
+                                        }, 300);
+                                    } else {
+                                        setTimeout(() => speakWordAtIndex(index + 1), 500);
+                                    }
+                                };
+
+                                speechSynthesis.speak(exampleUtterance);
+                            }, 300);
+                        };
+
+                        speechSynthesis.speak(chineseUtterance);
+                    }, 300);
+                };
+
+                wordUtterance.onerror = (e) => {
+                    log(`❌ 朗读错误: ${e.error}`);
+                    setTimeout(() => speakWordAtIndex(index + 1), 500);
+                };
+
+                speechSynthesis.speak(wordUtterance);
+            }
+
+            speakWordAtIndex(0);
+        }
+
+        log('页面已加载');
+        log('请点击按钮开始测试');
+    </script>
+</body>
+</html>

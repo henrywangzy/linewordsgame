@@ -321,7 +321,9 @@ const LineGame = {
 
         this.state.phase = 'observe';
         this.updatePhase('👀 观察阶段');
-        document.getElementById('gameHint').textContent = '请仔细观察字母出现的顺序...';
+
+        // gameHint 元素已被移除，不再需要更新
+        // document.getElementById('gameHint').textContent = '请仔细观察字母出现的顺序...';
 
         // 隐藏提示按钮
         const hintBtn = document.getElementById('hintBtn');
@@ -345,11 +347,14 @@ const LineGame = {
 
     // 显示所有单词
     async showAllWords() {
+        console.log('📢 showAllWords() 被调用');
         const cells = document.querySelectorAll('.grid-cell');
         const currentTaskId = this.state.observeTaskId;
 
         // 在观察阶段开始时，一次性朗读所有单词
+        console.log('📢 准备调用 speakAllWords()...');
         this.speakAllWords();
+        console.log('📢 speakAllWords() 调用完成');
 
         // 依次显示每个单词
         for (let wordIndex = 0; wordIndex < this.state.currentWords.length; wordIndex++) {
@@ -444,9 +449,11 @@ const LineGame = {
         // 显示当前需要连接的单词
         if (this.state.currentWords.length > 1) {
             const word = this.state.currentWords[this.state.currentDrawingWordIndex];
-            document.getElementById('gameHint').textContent = `请连接第1个单词: ${word.word}`;
+            const gameHint = document.getElementById('gameHint');
+            if (gameHint) gameHint.textContent = `请连接第1个单词: ${word.word}`;
         } else {
-            document.getElementById('gameHint').textContent = '请按记忆的路径连接字母';
+            const gameHint = document.getElementById('gameHint');
+            if (gameHint) gameHint.textContent = '请按记忆的路径连接字母';
         }
 
         // 不再高亮起点，让玩家凭记忆开始
@@ -522,8 +529,8 @@ const LineGame = {
         // 如果还有更多单词要连接
         if (this.state.currentDrawingWordIndex < this.state.currentWords.length - 1) {
             // 显示成功提示
-            document.getElementById('gameHint').textContent =
-                `✅ ${currentWord.word} 完成！继续下一个单词...`;
+            const gameHint = document.getElementById('gameHint');
+            if (gameHint) gameHint.textContent = `✅ ${currentWord.word} 完成！继续下一个单词...`;
 
             // 延迟后开始下一个单词
             setTimeout(() => {
@@ -548,8 +555,8 @@ const LineGame = {
                 // 进入下一个单词
                 this.state.currentDrawingWordIndex++;
                 const nextWord = this.state.currentWords[this.state.currentDrawingWordIndex];
-                document.getElementById('gameHint').textContent =
-                    `请连接第${this.state.currentDrawingWordIndex + 1}个单词: ${nextWord.word}`;
+                const gameHint = document.getElementById('gameHint');
+                if (gameHint) gameHint.textContent = `请连接第${this.state.currentDrawingWordIndex + 1}个单词: ${nextWord.word}`;
             }, 1500);
         } else {
             // 所有单词都完成了
@@ -596,7 +603,8 @@ const LineGame = {
         // cells[this.state.path[0]].classList.add('highlight');
 
         // 更新提示
-        document.getElementById('gameHint').textContent = '再试一次，你可以的！';
+        const gameHint = document.getElementById('gameHint');
+        if (gameHint) gameHint.textContent = '再试一次，你可以的！';
     },
 
     // 显示正确路径
@@ -615,12 +623,13 @@ const LineGame = {
             }
         });
 
-        document.getElementById('gameHint').textContent = '这是正确路径，记住它！';
+        const gameHint1 = document.getElementById('gameHint');
+        if (gameHint1) gameHint1.textContent = '这是正确路径，记住它！';
 
         // 显示操作按钮
         setTimeout(() => {
             const hintEl = document.getElementById('gameHint');
-            hintEl.innerHTML = `
+            if (hintEl) hintEl.innerHTML = `
                 <button onclick="LineGame.resetUserPath(); LineGame.state.phase='draw'; LineGame.updatePhase('✏️ 连线阶段')"
                     style="margin: 0 5px; padding: 8px 20px; background: #667eea; color: white; border: none; border-radius: 15px; cursor: pointer; font-size: 14px;">
                     重试
@@ -640,7 +649,7 @@ const LineGame = {
 
         // 在提示区显示继续按钮（作为备用）
         const hintEl = document.getElementById('gameHint');
-        hintEl.innerHTML = `
+        if (hintEl) hintEl.innerHTML = `
             <span>太棒了！</span>
             <button onclick="if(window.LineGame && LineGame.state) { LineGame.state.currentWordIndex++; LineGame.nextWord(); }"
                 style="margin-left: 10px; padding: 5px 15px; background: #4CAF50; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 14px;">
@@ -794,19 +803,28 @@ const LineGame = {
             return;
         }
 
-        // 合并所有例句,用换行分隔
-        const englishSentences = this.state.currentWords
-            .map(word => word.example || '')
-            .filter(s => s.trim())
-            .join('\n');
+        // 拆分并合并所有例句
+        const englishSentences = [];
+        const chineseSentences = [];
 
-        const chineseSentences = this.state.currentWords
-            .map(word => word.exampleChinese || '')
-            .filter(s => s.trim())
-            .join('\n');
+        this.state.currentWords.forEach(word => {
+            if (word.example) {
+                // 将 "English sentence. 中文翻译。" 拆分
+                const parts = word.example.split(/\.\s+/);
+                if (parts.length >= 2) {
+                    // 第一部分是英文（加回句号）
+                    englishSentences.push(parts[0] + '.');
+                    // 第二部分是中文
+                    chineseSentences.push(parts[1]);
+                } else {
+                    // 如果没有句号分隔，直接使用
+                    englishSentences.push(word.example);
+                }
+            }
+        });
 
-        exampleEnglish.textContent = englishSentences;
-        exampleChinese.textContent = chineseSentences;
+        exampleEnglish.textContent = englishSentences.join('\n');
+        exampleChinese.textContent = chineseSentences.join('\n');
     },
 
     // 朗读单词和例句
@@ -869,16 +887,28 @@ const LineGame = {
 
     // 按顺序朗读所有单词的完整信息
     speakAllWords() {
-        if (!('speechSynthesis' in window) || this.state.currentWords.length === 0) return;
+        console.log('🔊 调用 speakAllWords()');
+        console.log('🔊 speechSynthesis 支持:', 'speechSynthesis' in window);
+        console.log('🔊 当前单词数:', this.state.currentWords.length);
+
+        if (!('speechSynthesis' in window) || this.state.currentWords.length === 0) {
+            console.log('❌ 朗读条件不满足，退出');
+            return;
+        }
 
         try {
             speechSynthesis.cancel();
+            console.log('✅ 开始朗读序列...');
 
             // 递归函数，按顺序朗读每个单词
             const speakWordAtIndex = (index) => {
-                if (index >= this.state.currentWords.length) return;
+                if (index >= this.state.currentWords.length) {
+                    console.log('✅ 所有单词朗读完成');
+                    return;
+                }
 
                 const wordData = this.state.currentWords[index];
+                console.log(`🔊 朗读第 ${index + 1} 个单词:`, wordData.word);
 
                 // 1. 朗读英文单词
                 const wordUtterance = new SpeechSynthesisUtterance(wordData.word);
@@ -897,17 +927,22 @@ const LineGame = {
                         // 3. 朗读完中文后,朗读英文例句
                         chineseUtterance.onend = () => {
                             if (wordData.example) {
+                                // 将 "English sentence. 中文翻译。" 拆分
+                                const parts = wordData.example.split(/\.\s+/);
+                                const englishExample = parts.length >= 2 ? (parts[0] + '.') : wordData.example;
+                                const chineseExample = parts.length >= 2 ? parts[1] : '';
+
                                 setTimeout(() => {
-                                    const exampleUtterance = new SpeechSynthesisUtterance(wordData.example);
+                                    const exampleUtterance = new SpeechSynthesisUtterance(englishExample);
                                     exampleUtterance.lang = 'en-US';
                                     exampleUtterance.rate = 0.8;
                                     exampleUtterance.volume = 1.0;
 
                                     // 4. 朗读完例句后,朗读例句中文翻译
                                     exampleUtterance.onend = () => {
-                                        if (wordData.exampleChinese) {
+                                        if (chineseExample) {
                                             setTimeout(() => {
-                                                const exampleChineseUtterance = new SpeechSynthesisUtterance(wordData.exampleChinese);
+                                                const exampleChineseUtterance = new SpeechSynthesisUtterance(chineseExample);
                                                 exampleChineseUtterance.lang = 'zh-CN';
                                                 exampleChineseUtterance.rate = 0.8;
                                                 exampleChineseUtterance.volume = 1.0;
